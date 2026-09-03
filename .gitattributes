@@ -5,3 +5,6 @@
 *.png filter=lfs diff=lfs merge=binary -text
 *.o filter=lfs diff=lfs merge=binary -text
 *.bin filter=lfs diff=lfs merge=binary -text
+
+# Keep the README logo directly in Git so GitHub can render it without LFS.
+assets/logo.png -filter -diff -merge -text
