@@ -23,6 +23,14 @@
     "notify.pkgnet.webui_listening": "Web UI listening on port %u.",
     "notify.pkgnet.escalation_failed": "Privilege escalation failed.",
     "notify.pkg.installing": "Installing package from:\n%s",
-    "notify.pkg.finished": "Installation finished."
+    "notify.pkg.finished": "Installation finished.",
+    "ui.webui": "WebUI",
+    "ui.webui_desc": "Open http://<PS5-IP>:<WebUI port> in a browser",
+    "ui.server": "Server",
+    "ui.enabled": "Enabled",
+    "ui.api_port": "DPI API port",
+    "ui.webui_port": "WebUI port",
+    "ui.restart": "Restart server",
+    "ui.doc_description": "Configure the browser-based package installer"
   }
 }

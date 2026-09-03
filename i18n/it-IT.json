@@ -23,6 +23,14 @@
     "notify.pkgnet.webui_listening": "Interfaccia web in ascolto sulla porta %u.",
     "notify.pkgnet.escalation_failed": "Elevazione dei privilegi non riuscita.",
     "notify.pkg.installing": "Installazione del pacchetto da:\n%s",
-    "notify.pkg.finished": "Installazione terminata."
+    "notify.pkg.finished": "Installazione terminata.",
+    "ui.webui": "WebUI",
+    "ui.webui_desc": "Apri http://<IP-PS5>:<porta-WebUI> in un browser",
+    "ui.server": "Server",
+    "ui.enabled": "Attivato",
+    "ui.api_port": "Porta API DPI",
+    "ui.webui_port": "Porta WebUI",
+    "ui.restart": "Riavvia server",
+    "ui.doc_description": "Configura l'installatore di pacchetti tramite browser"
   }
 }

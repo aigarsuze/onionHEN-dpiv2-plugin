@@ -23,6 +23,14 @@
     "notify.pkgnet.webui_listening": "الواجهة الإلكترونية تستمع على المنفذ %u.",
     "notify.pkgnet.escalation_failed": "فشل رفع الامتيازات.",
     "notify.pkg.installing": "جاري تثبيت الحزمة من:\n%s",
-    "notify.pkg.finished": "انتهى التثبيت"
+    "notify.pkg.finished": "انتهى التثبيت",
+    "ui.webui": "WebUI",
+    "ui.webui_desc": "افتح http://<عنوان-IP-لـ-PS5>:<منفذ-WebUI> في المتصفح",
+    "ui.server": "الخادم",
+    "ui.enabled": "مُفعّل",
+    "ui.api_port": "منفذ DPI API",
+    "ui.webui_port": "منفذ WebUI",
+    "ui.restart": "إعادة تشغيل الخادم",
+    "ui.doc_description": "إعداد مثبّت الحزم عبر المتصفح"
   }
 }

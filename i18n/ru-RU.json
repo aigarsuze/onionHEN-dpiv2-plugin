@@ -23,6 +23,14 @@
     "notify.pkgnet.webui_listening": "Веб-интерфейс слушает порт %u.",
     "notify.pkgnet.escalation_failed": "Не удалось повысить привилегии.",
     "notify.pkg.installing": "Установка пакета из:\n%s",
-    "notify.pkg.finished": "Установка завершена."
+    "notify.pkg.finished": "Установка завершена.",
+    "ui.webui": "WebUI",
+    "ui.webui_desc": "Откройте http://<IP-PS5>:<порт-WebUI> в браузере",
+    "ui.server": "Сервер",
+    "ui.enabled": "Включено",
+    "ui.api_port": "Порт API DPI",
+    "ui.webui_port": "Порт WebUI",
+    "ui.restart": "Перезапустить сервер",
+    "ui.doc_description": "Настройте установщик пакетов через браузер"
   }
 }

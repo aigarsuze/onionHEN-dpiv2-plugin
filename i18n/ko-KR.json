@@ -23,6 +23,14 @@
     "notify.pkgnet.webui_listening": "Web UI가 포트 %u에서 대기 중입니다.",
     "notify.pkgnet.escalation_failed": "권한 상승에 실패했습니다.",
     "notify.pkg.installing": "다음 위치에서 패키지를 설치하는 중:\n%s",
-    "notify.pkg.finished": "설치가 끝났습니다."
+    "notify.pkg.finished": "설치가 끝났습니다.",
+    "ui.webui": "WebUI",
+    "ui.webui_desc": "브라우저에서 http://<PS5 IP>:<WebUI 포트> 를 엽니다",
+    "ui.server": "서버",
+    "ui.enabled": "사용",
+    "ui.api_port": "DPI API 포트",
+    "ui.webui_port": "WebUI 포트",
+    "ui.restart": "서버 다시 시작",
+    "ui.doc_description": "브라우저 기반 패키지 설치 프로그램 구성"
   }
 }

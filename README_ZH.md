@@ -85,7 +85,7 @@ TCP `9090` 提供 DPI 传输 API，TCP `12800` 提供 WebUI 和 SSE 状态流；
 
 | 路径 | 用途 |
 | --- | --- |
-| `/user/data/tmp/` | 保留用于重试或复用的软件包暂存文件 |
+| `/data/OnionHEN/pkgs/` | 保留用于重试或复用的软件包暂存文件 |
 | `/data/OnionHEN/plugins/DPIV00001.ini` | 启用状态与监听端口 |
 | `/data/OnionHEN/DPIV00001.log` | 插件生命周期与动态 UI 错误 |
 | `/data/OnionHEN/DPIV00001-server.log` | DPI 传输与安装日志 |

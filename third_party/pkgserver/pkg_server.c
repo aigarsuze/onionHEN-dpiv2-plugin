@@ -1,7 +1,7 @@
 /*
  * pkg-server.elf - PS5 PKG install server (TCP :9090, JSON API).
  *
- * Upload a .pkg, server stages it under /user/data/tmp and calls
+ * Upload a .pkg, server stages it under /data/OnionHEN/pkgs and calls
  * sceAppInstUtilInstallByPackage (SYSTEM authid). Sony's IPMI backend
  * handles the actual installation.
  *
@@ -61,7 +61,7 @@
 #endif
 
 
-#define VERSION           "1.3.2"
+#define VERSION           "1.0.0"
 #define BACKLOG           32
 
 #define HDR_BUF_CAP       16384L
@@ -74,7 +74,7 @@
 #define RECV_TIMEOUT_S    30
 #define INIT_TIMEOUT_MS   10000U
 
-#define TMP_DIR           "/user/data/tmp"
+#define TMP_DIR           "/data/OnionHEN/pkgs"
 
 /* Web UI single-file bundle (Vite + vite-plugin-singlefile). Embedded at
  * build time; the CMake ONIONHEN_WEBUI_INDEX define carries the absolute
@@ -912,12 +912,8 @@ static void handle_chunk_install(int fd, const http_req_t *req,
     char name[NAME_MAX_LEN + 8];
     char base_path[320];
     char stage_path[320] = "";
-    char cid[CONTENTID_SIZE] = "";
     char body[2048];
-    char esc_path[680];
-    char esc_cid[CONTENTID_SIZE * 2];
     char *stream_buf = NULL;
-    const char *via = "none";
 
     char vb[32];
     uint64_t off = 0, total = 0;
@@ -2196,8 +2192,6 @@ static void takeover_previous_instance(void) {
 int pkg_server_main(void) {
     signal(SIGPIPE, SIG_IGN);
 
-    if (mkdir("/user/data", 0777) != 0 && errno != EEXIST)
-        log_line("mkdir /user/data: %s", strerror(errno));
     if (mkdir(TMP_DIR, 0777) != 0 && errno != EEXIST)
         log_line("mkdir %s: %s", TMP_DIR, strerror(errno));
 

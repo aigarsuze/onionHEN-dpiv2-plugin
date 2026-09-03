@@ -23,6 +23,14 @@
     "notify.pkgnet.webui_listening": "Web UIがポート%uで待機中です",
     "notify.pkgnet.escalation_failed": "権限昇格に失敗しました",
     "notify.pkg.installing": "次の場所からパッケージをインストールしています：\n%s",
-    "notify.pkg.finished": "インストールが終了しました。"
+    "notify.pkg.finished": "インストールが終了しました。",
+    "ui.webui": "WebUI",
+    "ui.webui_desc": "ブラウザーで http://<PS5のIP>:<WebUIポート> を開きます",
+    "ui.server": "サーバー",
+    "ui.enabled": "有効",
+    "ui.api_port": "DPI APIポート",
+    "ui.webui_port": "WebUIポート",
+    "ui.restart": "サーバーを再起動",
+    "ui.doc_description": "ブラウザーベースのパッケージインストーラーを設定"
   }
 }

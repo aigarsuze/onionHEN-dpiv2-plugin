@@ -23,6 +23,14 @@
     "notify.pkgnet.webui_listening": "Interfejs webowy nasłuchuje na porcie %u.",
     "notify.pkgnet.escalation_failed": "Podniesienie uprawnień nie powiodło się.",
     "notify.pkg.installing": "Instalowanie pakietu z:\n%s",
-    "notify.pkg.finished": "Instalacja zakończona."
+    "notify.pkg.finished": "Instalacja zakończona.",
+    "ui.webui": "WebUI",
+    "ui.webui_desc": "Otwórz http://<IP-PS5>:<port-WebUI> w przeglądarce",
+    "ui.server": "Serwer",
+    "ui.enabled": "Włączony",
+    "ui.api_port": "Port API DPI",
+    "ui.webui_port": "Port WebUI",
+    "ui.restart": "Uruchom serwer ponownie",
+    "ui.doc_description": "Skonfiguruj instalator pakietów przez przeglądarkę"
   }
 }

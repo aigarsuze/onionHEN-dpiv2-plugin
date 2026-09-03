@@ -23,6 +23,14 @@
     "notify.pkgnet.webui_listening": "เว็บอินเทอร์เฟซกำลังฟังพอร์ต %u",
     "notify.pkgnet.escalation_failed": "การยกระดับสิทธิ์ล้มเหลว",
     "notify.pkg.installing": "กำลังติดตั้งแพ็กเกจจาก:\n%s",
-    "notify.pkg.finished": "ติดตั้งเสร็จแล้ว"
+    "notify.pkg.finished": "ติดตั้งเสร็จแล้ว",
+    "ui.webui": "WebUI",
+    "ui.webui_desc": "เปิด http://<IP-PS5>:<พอร์ต-WebUI> ในเบราวเซอร์",
+    "ui.server": "เซิร์ฟเวอร์",
+    "ui.enabled": "เปิดใช้งาน",
+    "ui.api_port": "พอร์ต DPI API",
+    "ui.webui_port": "พอร์ต WebUI",
+    "ui.restart": "รีสตาร์ตเซิร์ฟเวอร์",
+    "ui.doc_description": "กำหนดค่าติดตั้งแพ็กเกจผ่านเบราวเซอร์"
   }
 }

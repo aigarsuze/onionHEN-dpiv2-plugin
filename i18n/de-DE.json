@@ -23,6 +23,14 @@
     "notify.pkgnet.webui_listening": "Web-UI lauscht auf Port %u.",
     "notify.pkgnet.escalation_failed": "Privilegieneskalation fehlgeschlagen.",
     "notify.pkg.installing": "Paket wird installiert von:\n%s",
-    "notify.pkg.finished": "Installation beendet."
+    "notify.pkg.finished": "Installation beendet.",
+    "ui.webui": "WebUI",
+    "ui.webui_desc": "Öffne http://<PS5-IP>:<WebUI-Port> in einem Browser",
+    "ui.server": "Server",
+    "ui.enabled": "Aktiviert",
+    "ui.api_port": "DPI-API-Port",
+    "ui.webui_port": "WebUI-Port",
+    "ui.restart": "Server neu starten",
+    "ui.doc_description": "Browserbasierten Paketinstaller konfigurieren"
   }
 }

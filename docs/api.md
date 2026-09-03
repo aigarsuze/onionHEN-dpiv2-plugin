@@ -122,7 +122,7 @@ replaces a running one) and as a healthy check. Do not remove.
 
 ### `GET /staged-size?name=X` — reuse preflight
 
-Reports the size of the staged `X` (under `/user/data/tmp`).
+Reports the size of the staged `X` (under `/data/OnionHEN/pkgs`).
 
 ```json
 {"ok":true,"size":4194304000}
@@ -184,7 +184,7 @@ register task). Replies:
 
 - with `wait` unset/0 — async mode:
   ```json
-  {"ok":true,"installed":false,"via":"patch","content_id":"UP0001-XXXX-XXXXX_00-XXXXXXXXXXXXXXXXXX","tmp_file":"/user/data/tmp/MyGame.pkg","staged":"kept","phase":"accepted","note":"watch the SSE stream /api/stream for phase=playable"}
+  {"ok":true,"installed":false,"via":"patch","content_id":"UP0001-XXXX-XXXXX_00-XXXXXXXXXXXXXXXXXX","tmp_file":"/data/OnionHEN/pkgs/MyGame.pkg","staged":"kept","phase":"accepted","note":"watch the SSE stream /api/stream for phase=playable"}
   ```
 - with `wait=<seconds>` (cap `INSTALL_WAIT_MAX_S`) the server blocks until the
   terminal state and returns `installed:true,phase:"playable"` or an error.

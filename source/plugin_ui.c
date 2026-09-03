@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "dpi_i18n.h"
 #include "plugin_config.h"
 
 #define CONTRIBUTION_ID "settings"
@@ -47,17 +48,20 @@ static onion_status add_nodes(onion_ui_document *document,
     onion_status status = onion_ui_document_add_node(document, &node);
     if (status != ONION_OK) return status;
 
-    node = make_node(ONION_UI_NODE_LABEL, "webui", "main", "WebUI");
-    snprintf(node.description, sizeof(node.description),
-             "Open http://<PS5-IP>:<WebUI port> in a browser");
+    node = make_node(ONION_UI_NODE_LABEL, "webui", "main",
+                     dpi_i18n_translate("ui.webui"));
+    snprintf(node.description, sizeof(node.description), "%s",
+             dpi_i18n_translate("ui.webui_desc"));
     status = onion_ui_document_add_node(document, &node);
     if (status != ONION_OK) return status;
 
-    node = make_node(ONION_UI_NODE_GROUP, "server", "main", "Server");
+    node = make_node(ONION_UI_NODE_GROUP, "server", "main",
+                     dpi_i18n_translate("ui.server"));
     status = onion_ui_document_add_node(document, &node);
     if (status != ONION_OK) return status;
 
-    node = make_node(ONION_UI_NODE_TOGGLE, "enabled", "server", "Enabled");
+    node = make_node(ONION_UI_NODE_TOGGLE, "enabled", "server",
+                     dpi_i18n_translate("ui.enabled"));
     node.value_type = ONION_UI_VALUE_BOOL;
     node.binding = ONION_UI_BINDING_EVENT;
     snprintf(node.binding_key, sizeof(node.binding_key), "enabled_changed");
@@ -66,15 +70,17 @@ static onion_status add_nodes(onion_ui_document *document,
     status = onion_ui_document_add_node(document, &node);
     if (status != ONION_OK) return status;
 
-    status = add_port_node(document, "api_port", "DPI API port",
+    status = add_port_node(document, "api_port",
+                           dpi_i18n_translate("ui.api_port"),
                            "api_port_changed", settings->api_port);
     if (status != ONION_OK) return status;
-    status = add_port_node(document, "webui_port", "WebUI port",
+    status = add_port_node(document, "webui_port",
+                           dpi_i18n_translate("ui.webui_port"),
                            "webui_port_changed", settings->webui_port);
     if (status != ONION_OK) return status;
 
     node = make_node(ONION_UI_NODE_ACTION, "restart", "server",
-                     "Restart server");
+                     dpi_i18n_translate("ui.restart"));
     node.flags = ONION_UI_NODE_FLAG_CONFIRM;
     node.binding = ONION_UI_BINDING_EVENT;
     snprintf(node.binding_key, sizeof(node.binding_key), "restart_requested");
@@ -98,8 +104,8 @@ onion_status plugin_ui_create(const plugin_settings *settings,
     snprintf(description.contribution_id,
              sizeof(description.contribution_id), "%s", CONTRIBUTION_ID);
     snprintf(description.title, sizeof(description.title), "%s", PLUGIN_NAME);
-    snprintf(description.description, sizeof(description.description),
-             "Configure the browser-based package installer");
+    snprintf(description.description, sizeof(description.description), "%s",
+             dpi_i18n_translate("ui.doc_description"));
     snprintf(description.root_page_id, sizeof(description.root_page_id),
              "main");
 

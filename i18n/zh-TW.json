@@ -23,6 +23,14 @@
     "notify.pkgnet.webui_listening": "Web UI 正在監聽連接埠 %u。",
     "notify.pkgnet.escalation_failed": "提高權限失敗。",
     "notify.pkg.installing": "正在從以下位置安裝套件：\n%s",
-    "notify.pkg.finished": "安裝結束。"
+    "notify.pkg.finished": "安裝結束。",
+    "ui.webui": "WebUI",
+    "ui.webui_desc": "在瀏覽器中開啟 http://<PS5 IP>:<WebUI 連接埠>",
+    "ui.server": "伺服器",
+    "ui.enabled": "已啟用",
+    "ui.api_port": "DPI API 連接埠",
+    "ui.webui_port": "WebUI 連接埠",
+    "ui.restart": "重新啟動伺服器",
+    "ui.doc_description": "設定以瀏覽器為基礎的套件安裝程式"
   }
 }

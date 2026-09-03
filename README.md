@@ -100,7 +100,7 @@ stream. The ports must be different. Changes are stored in
 
 | Path | Purpose |
 | --- | --- |
-| `/user/data/tmp/` | Staged package uploads retained for retry/reuse |
+| `/data/OnionHEN/pkgs/` | Staged package uploads retained for retry/reuse |
 | `/data/OnionHEN/plugins/DPIV00001.ini` | Enabled state and listener ports |
 | `/data/OnionHEN/DPIV00001.log` | Plugin lifecycle and dynamic UI errors |
 | `/data/OnionHEN/DPIV00001-server.log` | DPI transfer and installer log |
