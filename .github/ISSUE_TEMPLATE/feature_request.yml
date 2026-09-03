@@ -1,5 +1,5 @@
 name: Feature request
-description: Propose an improvement to the plugin starting point
+description: Propose an improvement to DPI v2
 title: "[Feature] "
 labels: ["enhancement"]
 body:
@@ -7,7 +7,7 @@ body:
     id: problem
     attributes:
       label: Problem
-      description: What common plugin-authoring problem should the template solve?
+      description: What installer, transfer, WebUI, or configuration problem should be solved?
     validations:
       required: true
   - type: textarea
@@ -20,7 +20,7 @@ body:
     id: scope
     attributes:
       label: Repository ownership
-      description: Explain why this belongs in the boilerplate rather than the SDK or OnionHEN host.
+      description: Explain why this belongs in DPI rather than the SDK or OnionHEN host.
     validations:
       required: true
   - type: textarea
@@ -34,4 +34,3 @@ body:
       options:
         - label: I searched existing issues and pull requests.
           required: true
-

@@ -1,8 +1,8 @@
 # Contributing
 
-Keep contributions focused on making this repository a clear, reliable plugin
-starting point. SDK ABI or host behavior changes belong in their respective
-repositories.
+Keep contributions focused on the DPI plugin, transfer API, embedded WebUI,
+and its OnionHEN integration. SDK ABI or host behavior changes belong in their
+respective repositories.
 
 All participation is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
@@ -26,7 +26,10 @@ Before submitting a change:
 ## Design rules
 
 - Keep process/session lifecycle in `source/main.c`.
-- Keep UI construction and action handling in `source/plugin_ui.c`.
+- Keep listener ownership and shutdown ordering in `source/dpi_service.c`.
+- Keep XML configuration UI construction in `source/plugin_ui.c`.
+- Keep browser installation workflows in `webui/`.
+- Preserve the published DPI HTTP/SSE contract or document a versioned change.
 - Define plugin identity once in `CMakeLists.txt`.
 - Use only the SDK's public C headers across the host boundary.
 - Validate input and return specific `onion_status` errors.

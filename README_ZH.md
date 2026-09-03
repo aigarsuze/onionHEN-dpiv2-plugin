@@ -3,58 +3,40 @@
 </p>
 
 <p align="center">
-  <b>OnionHEN 插件样板</b><br/>
-  用于开发独立 OnionHEN 插件的可编译起点
+  <b>OnionHEN DPI v2 插件</b><br/>
+  OnionHEN 的浏览器远程软件包安装器
 </p>
 
 <p align="center">
-  <b>简体中文</b>
-  ·
-  <a href="README.md">English</a>
+  <b>简体中文</b> · <a href="README.md">English</a>
 </p>
 
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="license"/></a>
-  <img src="https://img.shields.io/badge/Platform-PlayStation%205-003791?style=flat&logo=playstation" alt="PlayStation 5"/>
-  <img src="https://img.shields.io/badge/C-00599C?style=flat&logo=c&logoColor=white" alt="C"/>
-  <img src="https://img.shields.io/badge/Build-CMake-064F8C?style=flat&logo=cmake" alt="CMake"/>
-</p>
+DPI v2 通过本地网络接收 PS4 与 PS5 `.pkg` 文件，将文件暂存到主机后提交给
+PS5 系统安装器。它是带内嵌 descriptor 和 WebUI 的普通 OnionHEN 插件 ELF，
+无需额外安装包或运行时资源。
 
-这是一个精简、可直接使用的 OnionHEN 插件项目模板。它生成带有
-`.onion_plugin` descriptor 的标准 PS5 ELF，不需要压缩包、自定义容器或单独的
-manifest。
+浏览器仍是主要的安装操作界面。OnionHEN 动态 XML 页面只负责服务配置：启停、
+API 端口、WebUI 端口和重启，不承载上传或安装流程。
 
-示例插件会连接 OnionHEN daemon、建立插件会话、注册动态设置 UI，处理开关、
-列表、输入框和动作事件，并在退出时注销 UI。
+## 功能
 
-## 环境要求
+- 从电脑或移动设备浏览器拖放并批量上传
+- 分块传输、断点暂存和已有暂存文件复用
+- 安装前识别 PS4/PS5 软件包类型
+- 可排序安装队列、单文件重试和 SSE 实时进度
+- WebUI 与主机通知支持 14 种语言
+- API 与 WebUI 端口可配置，绑定失败时自动回滚
+- 由 OnionHEN 完成优雅启动、停止、重载、替换和删除
 
+## 构建要求
+
+- 支持外部插件的 OnionHEN 版本
+- [OnionHEN Plugin SDK](https://github.com/OnionBuddies/onionHEN-plugin-sdk)
 - [PS5 Payload SDK](https://github.com/ps5-payload-dev/sdk)
-- CMake 3.20 或更高版本
-- Ninja
-- Git 与 Python 3.9 或更高版本
+- CMake 3.20 或更高版本、Ninja、Git、Python 3.9 或更高版本
+- 仅在重新构建 WebUI 时需要 Node.js 和 npm
 
-## 创建插件
-
-使用 GitHub Template 功能或直接克隆本仓库，然后修改
-[`CMakeLists.txt`](CMakeLists.txt) 开头的元数据：
-
-```cmake
-set(ONION_PLUGIN_TARGET example_plugin)
-set(ONION_PLUGIN_ID ONIO10001)
-set(ONION_PLUGIN_VERSION 1.00)
-set(ONION_PLUGIN_NAME "Example Plugin")
-```
-
-`ONION_PLUGIN_ID` 必须由四个 ASCII 字母和五个数字组成。插件发布后应把它视为
-永久标识，不要随意更换。版本格式为 `N.NN`。这些值会生成
-`plugin_config.h`，并统一用于 ELF descriptor、UI contribution、日志路径和
-构建后的校验，避免重复定义产生偏差。
-
-在 `source/plugin_ui.c` 和 `source/main.c` 中替换示例业务逻辑。除非插件需要
-不同的 capability 或生命周期 flag，否则保留 `source/plugin_descriptor.c` 即可。
-
-## 编译
+## 构建
 
 ```sh
 export PS5_PAYLOAD_SDK=/path/to/ps5-payload-sdk
@@ -62,10 +44,9 @@ cmake --preset ps5
 cmake --build --preset ps5
 ```
 
-产物位于 `build-ps5/bin/example_plugin.elf`。构建结束后会自动检查 ELF 是否
-包含有效 descriptor，并验证 ID 和版本是否与 CMake 配置一致。
+产物是 `build-ps5/bin/dpiv2.elf`，构建结束后会自动校验内嵌 descriptor。
 
-项目固定使用经过验证的 SDK commit。开发 SDK 时可以切换到本地源码：
+开发 SDK 时可直接使用本地检出：
 
 ```sh
 cmake --preset ps5 \
@@ -73,72 +54,72 @@ cmake --preset ps5 \
 cmake --build --preset ps5
 ```
 
-在远程 SDK 与本地 SDK 之间切换前，请删除 `build-ps5/` 后重新配置。
+重新构建内嵌网页：
 
-## 安装与运行
-
-把 ELF 上传到 PS5 插件目录，并使用 descriptor ID 作为文件名：
-
-```text
-/data/OnionHEN/plugins/ONIO10001.elf
+```sh
+cd webui
+npm ci
+npm run build
 ```
 
-需要原子更新时，先上传为 `ONIO10001.installing`，上传完成后再重命名为
-`ONIO10001.elf`。示例 descriptor 带有 `AUTO_START`，OnionHEN 发现后会自动
-启动。进入 **★ OnionHEN 插件**，选择该插件即可打开它注册的设置页面。
+`webui/dist/index.html` 是单文件生产 bundle，编译插件时会直接嵌入 ELF。
 
-示例把生命周期和错误日志写入 `/data/OnionHEN/ONIO10001.log`。插件退出或连接
-断开时，OnionHEN 会移除它的 UI；在正常收到 `SIGINT`/`SIGTERM` 时，插件也会
-主动注销 UI。
+## 安装
+
+先上传为 `/data/OnionHEN/plugins/DPIV00001.installing`，上传完成后再原子重命名为
+`/data/OnionHEN/plugins/DPIV00001.elf`。
+
+OnionHEN 会自动发现并启动插件。进入 **★ OnionHEN 插件 → DPI v2**，可以启停
+服务、修改端口或重启服务。
+
+默认配置下，在同一局域网的其他设备上打开：
+
+```text
+http://<PS5-IP>:12800
+```
+
+TCP `9090` 提供 DPI 传输 API，TCP `12800` 提供 WebUI 和 SSE 状态流；两个端口
+不能相同。配置保存在 `/data/OnionHEN/plugins/DPIV00001.ini`。
+
+## 存储与日志
+
+| 路径 | 用途 |
+| --- | --- |
+| `/user/data/tmp/` | 保留用于重试或复用的软件包暂存文件 |
+| `/data/OnionHEN/plugins/DPIV00001.ini` | 启用状态与监听端口 |
+| `/data/OnionHEN/DPIV00001.log` | 插件生命周期与动态 UI 错误 |
+| `/data/OnionHEN/DPIV00001-server.log` | DPI 传输与安装日志 |
+
+HTTP 与 SSE 协议详见 [docs/api.md](docs/api.md)。
 
 ## 项目结构
 
 ```text
 .
-├── cmake/ps5-toolchain.cmake     选择 PS5 编译器
-├── include/plugin_config.h.in    统一生成插件元数据
-├── include/plugin_ui.h           示例 UI 模块接口
-├── source/main.c                 进程/会话生命周期与事件循环
-├── source/plugin_descriptor.c    嵌入 ELF 的 descriptor
-├── source/plugin_ui.c            UI document 与动作处理
-├── CMakeLists.txt                元数据、SDK 依赖和插件 target
-└── CMakePresets.json             标准 PS5 配置与构建命令
+├── i18n/                    主机通知翻译目录
+├── include/                 插件、服务、设置和 UI 接口
+├── source/                  生命周期、动态 UI、服务和本地化实现
+├── third_party/pkgserver/   DPI 传输与安装服务
+├── tools/                   通知翻译表生成器
+├── webui/                   浏览器应用和内嵌 dist bundle
+├── CMakeLists.txt           SDK 集成与 PS5 插件目标
+└── CMakePresets.json        标准 PS5 配置和构建命令
 ```
 
-这个拆分让职责保持清晰：`main.c` 管理资源和退出顺序，`plugin_ui.c` 管理展示
-状态与 UI 动作，SDK 负责协议、transport、校验和 ELF 检查。插件代码只依赖公开
-的 C ABI。
+## 安全说明
 
-## 定制注意事项
+DPI 会监听主机的所有网络接口，并且不验证客户端身份。只应在可信局域网中使用，
+不用时请关闭服务，不要将任一端口暴露到互联网。上传的软件包是不可信输入，最终
+的软件包校验由 PS5 系统安装器完成。
 
-- 只声明插件实际使用的 capability。
-- 手动启动的插件应移除 `AUTO_START`。
-- 常驻服务保留 `LONG_RUNNING`；实现了优雅退出时保留 `STOP_SUPPORTED`。
-- 节点 ID 和 binding key 是稳定协议标识，不是展示文案。
-- 不要通过 IPC 传递指针、C++ 对象或编译器相关的内存布局。
-- 即使 UI 已经校验输入，插件仍应校验收到的动作值。
-- 不要提交 PS5 SDK 文件、专有库、密钥、解密后的系统文件、主机标识、日志或
-  编译生成的 ELF。
-
-当前 SDK 已提供动态 UI 和 IPC。daemon 侧的日志、通知和持久化配置服务尚可能
-返回 `ONION_E_NOT_SUPPORTED`，因此示例暂时使用内存状态与本地文件日志。
-
-## 贡献与安全
-
-提交 Pull Request 前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。参与项目时请
-遵守 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)。安全问题请按照
-[SECURITY.md](SECURITY.md) 私下报告。
-
-## 相关项目
-
-- [OnionHEN](https://github.com/aydencharles/onionHEN)
-- [OnionHEN Plugin SDK](https://github.com/OnionBuddies/onionHEN-plugin-sdk)
-- [PS5 Payload SDK](https://github.com/ps5-payload-dev/sdk)
+提交 PR 前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。社区行为受
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) 约束。安全问题请按照
+[SECURITY.md](SECURITY.md) 私下报告。第三方归属见
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
 ## 许可证
 
-本项目采用 [GNU General Public License v3.0](LICENSE)。第三方组件保留各自的
-许可证。
+本项目采用 [GNU General Public License v3.0](LICENSE)。
 
-OnionHEN 是非官方自制软件项目，与 Sony Interactive Entertainment 无关。
-请仅在自己拥有的硬件上使用，风险自负，项目不提供任何担保。
+OnionHEN 是非官方自制软件项目，与 Sony Interactive Entertainment 无关。请仅在
+自己拥有的硬件上使用，风险自负，不提供任何担保。

@@ -1,5 +1,5 @@
 name: Documentation issue
-description: Report missing, incorrect, or unclear template documentation
+description: Report missing, incorrect, or unclear DPI plugin documentation
 title: "[Docs] "
 labels: ["documentation"]
 body:
@@ -20,4 +20,3 @@ body:
     id: suggestion
     attributes:
       label: Suggested improvement
-

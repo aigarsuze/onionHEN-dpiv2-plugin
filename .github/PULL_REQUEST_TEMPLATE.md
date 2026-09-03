@@ -1,10 +1,10 @@
 ## Summary
 
-<!-- What plugin-authoring problem does this change solve? -->
+<!-- What DPI behavior or maintenance problem does this change solve? -->
 
 ## Scope
 
-<!-- Why does this belong in the boilerplate rather than the SDK or host? -->
+<!-- Why does this belong in DPI rather than the SDK or host? -->
 
 ## Validation
 
@@ -17,4 +17,3 @@
 - [ ] `git diff --check` passes.
 - [ ] Both READMEs reflect user-facing changes.
 - [ ] No credentials, proprietary files, keys, console identifiers, or artifacts are included.
-

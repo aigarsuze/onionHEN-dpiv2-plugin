@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a reproducible template build or runtime failure
+description: Report a reproducible DPI build, WebUI, transfer, or runtime failure
 title: "[Bug] "
 labels: ["bug"]
 body:
@@ -12,7 +12,7 @@ body:
   - type: input
     id: revision
     attributes:
-      label: Boilerplate revision
+      label: DPI plugin revision
       placeholder: Commit SHA
     validations:
       required: true
@@ -60,4 +60,3 @@ body:
           required: true
         - label: This report contains no secrets or proprietary files.
           required: true
-

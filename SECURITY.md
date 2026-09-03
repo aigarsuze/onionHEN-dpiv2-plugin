@@ -25,6 +25,8 @@ errors should use the public bug report form.
 
 ## Scope
 
-This repository is an unofficial PS5 homebrew plugin template. Reports about
-Sony services, PlayStation Network, unrelated payloads, or vulnerabilities in
-the PS5 platform itself are outside this project's scope.
+This repository is an unofficial PS5 homebrew network-installer plugin. Its
+unauthenticated listeners, upload validation, staging paths, HTTP parsing, and
+plugin lifecycle are in scope. Reports about Sony services, PlayStation
+Network, unrelated payloads, or vulnerabilities in the PS5 platform itself are
+outside this project's scope.

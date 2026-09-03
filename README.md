@@ -3,14 +3,12 @@
 </p>
 
 <p align="center">
-  <b>OnionHEN Plugin Boilerplate</b><br/>
-  A ready-to-build starting point for standalone OnionHEN plugins
+  <b>OnionHEN DPI v2 Plugin</b><br/>
+  Browser-based remote package installer for OnionHEN
 </p>
 
 <p align="center">
-  <a href="README_ZH.md">简体中文</a>
-  ·
-  <b>English</b>
+  <a href="README_ZH.md">简体中文</a> · <b>English</b>
 </p>
 
 <p align="center">
@@ -20,41 +18,32 @@
   <img src="https://img.shields.io/badge/Build-CMake-064F8C?style=flat&logo=cmake" alt="CMake"/>
 </p>
 
-This repository is a minimal, production-oriented template for an OnionHEN
-plugin. It builds a normal PS5 ELF with an embedded `.onion_plugin` descriptor;
-there is no package, archive, or separate manifest to maintain.
+DPI v2 receives PS4 and PS5 `.pkg` files over the local network, stages them
+on the console, and submits them to the PS5 system installer. It is a normal
+OnionHEN plugin ELF with an embedded descriptor and WebUI; no separate package
+or runtime assets are required.
 
-The included example connects to the OnionHEN daemon, opens a plugin session,
-registers a dynamic settings UI, handles toggle/list/input/action events, and
-unregisters its UI during shutdown.
+The browser remains the primary installer interface. The dynamic OnionHEN XML
+page is deliberately limited to service configuration: start/stop, API port,
+WebUI port, and restart.
+
+## Features
+
+- Drag-and-drop multi-file uploads from a desktop or mobile browser
+- Chunked transfer, resumable staging, and staged-file reuse
+- PS4/PS5 package detection before installation
+- Sortable install queue, per-file retry, and live SSE progress
+- Localized WebUI and console notifications for 14 languages
+- Configurable API and WebUI ports with rollback if rebinding fails
+- Graceful start, stop, reload, replacement, and removal through OnionHEN
 
 ## Requirements
 
+- An OnionHEN build with external plugin support
+- [OnionHEN Plugin SDK](https://github.com/OnionBuddies/onionHEN-plugin-sdk)
 - [PS5 Payload SDK](https://github.com/ps5-payload-dev/sdk)
-- CMake 3.20 or newer
-- Ninja
-- Git and Python 3.9 or newer
-
-## Create your plugin
-
-Use this repository as a GitHub template or clone it, then change the plugin
-metadata at the top of [`CMakeLists.txt`](CMakeLists.txt):
-
-```cmake
-set(ONION_PLUGIN_TARGET example_plugin)
-set(ONION_PLUGIN_ID ONIO10001)
-set(ONION_PLUGIN_VERSION 1.00)
-set(ONION_PLUGIN_NAME "Example Plugin")
-```
-
-`ONION_PLUGIN_ID` must be four ASCII letters followed by five digits. Treat it
-as a permanent application identity after publishing. Versions use `N.NN`.
-The configured values generate `plugin_config.h` and are shared by the ELF
-descriptor, UI contribution, logs, and post-build validation.
-
-Replace the example behavior in `source/plugin_ui.c` and `source/main.c`. Keep
-`source/plugin_descriptor.c` unless the plugin needs different capabilities or
-lifecycle flags.
+- CMake 3.20 or newer, Ninja, Git, and Python 3.9 or newer
+- Node.js and npm only when rebuilding the WebUI
 
 ## Build
 
@@ -64,12 +53,11 @@ cmake --preset ps5
 cmake --build --preset ps5
 ```
 
-The result is `build-ps5/bin/example_plugin.elf`. The build automatically
-checks that the ELF contains a valid descriptor with the configured ID and
-version.
+The result is `build-ps5/bin/dpiv2.elf`. The build validates the embedded
+descriptor automatically.
 
 The SDK dependency is pinned to a tested commit. During SDK development, use a
-local checkout without changing the project:
+local checkout:
 
 ```sh
 cmake --preset ps5 \
@@ -77,79 +65,78 @@ cmake --preset ps5 \
 cmake --build --preset ps5
 ```
 
-Delete `build-ps5/` before switching between downloaded and local SDK sources.
+To rebuild the embedded browser application:
 
-## Install and run
-
-Upload the ELF to the PS5 plugin directory using its descriptor ID as the file
-name:
-
-```text
-/data/OnionHEN/plugins/ONIO10001.elf
+```sh
+cd webui
+npm ci
+npm run build
 ```
 
-For an atomic update, upload it as `ONIO10001.installing`, then rename it to
-`ONIO10001.elf`. OnionHEN discovers the plugin and starts it automatically
-because the example descriptor includes `AUTO_START`. Open **★ OnionHEN
-Plugins**, select the plugin, then open its contributed settings page.
+`webui/dist/index.html` is a single-file production bundle and is embedded in
+the ELF at build time.
 
-The example writes lifecycle and error messages to
-`/data/OnionHEN/ONIO10001.log`. OnionHEN removes the contribution when the
-plugin exits or disconnects; the plugin also unregisters explicitly on normal
-`SIGINT`/`SIGTERM` shutdown.
+## Install
+
+Upload the ELF atomically as
+`/data/OnionHEN/plugins/DPIV00001.installing`, then rename it to
+`/data/OnionHEN/plugins/DPIV00001.elf` after the upload completes.
+
+OnionHEN discovers and starts it automatically. Open **★ OnionHEN Plugins →
+DPI v2** to enable or disable the server, change its ports, or restart it.
+
+With the default configuration, open this URL from another device on the same
+network:
+
+```text
+http://<PS5-IP>:12800
+```
+
+TCP `9090` serves the DPI transfer API and TCP `12800` serves the WebUI and SSE
+stream. The ports must be different. Changes are stored in
+`/data/OnionHEN/plugins/DPIV00001.ini`.
+
+## Storage and logs
+
+| Path | Purpose |
+| --- | --- |
+| `/user/data/tmp/` | Staged package uploads retained for retry/reuse |
+| `/data/OnionHEN/plugins/DPIV00001.ini` | Enabled state and listener ports |
+| `/data/OnionHEN/DPIV00001.log` | Plugin lifecycle and dynamic UI errors |
+| `/data/OnionHEN/DPIV00001-server.log` | DPI transfer and installer log |
+
+See [docs/api.md](docs/api.md) for the HTTP and SSE protocol.
 
 ## Project structure
 
 ```text
 .
-├── cmake/ps5-toolchain.cmake     PS5 compiler selection
-├── include/plugin_config.h.in    generated metadata contract
-├── include/plugin_ui.h           example UI module interface
-├── source/main.c                 process/session lifecycle and event loop
-├── source/plugin_descriptor.c    embedded ELF descriptor
-├── source/plugin_ui.c            UI document and action handling
-├── CMakeLists.txt                metadata, SDK dependency, plugin target
-└── CMakePresets.json             standard PS5 configure/build commands
+├── i18n/                    console-notification locale catalogs
+├── include/                 plugin, service, settings, and UI interfaces
+├── source/                  lifecycle, dynamic UI, service, and localization
+├── third_party/pkgserver/   vendored DPI transfer/install server
+├── tools/                   notification catalog generator
+├── webui/                   browser application and embedded dist bundle
+├── CMakeLists.txt           SDK integration and PS5 plugin target
+└── CMakePresets.json        standard PS5 configure/build commands
 ```
 
-The split is intentional: `main.c` owns resources and shutdown ordering,
-`plugin_ui.c` owns presentation state and actions, and the SDK owns protocol,
-transport, validation, and ELF inspection. Plugin code depends only on the
-public C ABI.
+## Security
 
-## Customization notes
-
-- Request only capabilities the plugin actually uses.
-- Remove `AUTO_START` for a manually started plugin.
-- Keep `LONG_RUNNING` for a resident service and `STOP_SUPPORTED` when graceful
-  termination is implemented.
-- Node IDs and binding keys are stable protocol identifiers, not display text.
-- Do not send pointers, C++ objects, or compiler-specific layouts across IPC.
-- Validate action values in the plugin even though the UI validates input.
-- Do not commit PS5 SDK files, proprietary libraries, keys, decrypted system
-  files, console identifiers, logs, or built ELF files.
-
-The current SDK provides dynamic UI and IPC. Daemon-backed logging,
-notifications, and persistent configuration services may return
-`ONION_E_NOT_SUPPORTED`; the example therefore keeps state in memory and uses
-local file logging.
-
-## Contributing and security
+DPI listens on all console network interfaces and does not authenticate
+clients. Use it only on a trusted local network, stop it when it is not needed,
+and never expose either port to the internet. Uploaded packages are untrusted
+input; final package validation is performed by the PS5 system installer.
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 Participation is governed by [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Report
 security-sensitive issues privately according to [SECURITY.md](SECURITY.md).
-
-## Related projects
-
-- [OnionHEN](https://github.com/aydencharles/onionHEN)
-- [OnionHEN Plugin SDK](https://github.com/OnionBuddies/onionHEN-plugin-sdk)
-- [PS5 Payload SDK](https://github.com/ps5-payload-dev/sdk)
+Third-party attribution is listed in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## License
 
 This project is licensed under the [GNU General Public License v3.0](LICENSE).
-Third-party components retain their respective licenses.
 
 OnionHEN is an unofficial homebrew project and is not affiliated with Sony
 Interactive Entertainment. Use it only on hardware you own and at your own
