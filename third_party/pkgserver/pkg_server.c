@@ -1043,6 +1043,8 @@ static void handle_chunk_install(int fd, const http_req_t *req,
 
 
         struct stat stg;
+        if (mkdir(TMP_DIR, 0777) != 0 && errno != EEXIST)
+            log_line("mkdir %s: %s", TMP_DIR, strerror(errno));
         {
             int update = (stat(base_path, &stg) == 0 && S_ISREG(stg.st_mode) &&
                           req->have_x_size &&
@@ -1711,6 +1713,8 @@ static void handle_install(int fd, const http_req_t *req,
             send_all(fd, cont, sizeof(cont) - 1);
         }
 
+        if (mkdir(TMP_DIR, 0777) != 0 && errno != EEXIST)
+            log_line("mkdir %s: %s", TMP_DIR, strerror(errno));
         int ffd = claim_stage_file(base_path, stage_path,
                                    sizeof(stage_path));
         if (ffd < 0) {
