@@ -75,6 +75,7 @@
 #define INIT_TIMEOUT_MS   10000U
 
 #define TMP_DIR           "/data/OnionHEN/pkgs"
+#define INSTALL_DIR       "/user/data/OnionHEN/pkgs"
 
 /* Web UI single-file bundle (Vite + vite-plugin-singlefile). Embedded at
  * build time; the CMake ONIONHEN_WEBUI_INDEX define carries the absolute
@@ -1235,7 +1236,13 @@ static void install_staged(int fd, const char *stage_path, const char *name,
         char cbuf[16];
         if (query_get(query, "ctype", cbuf, sizeof(cbuf))) { int cv = atoi(cbuf); if (cv > 0) ctype = cv; }
         log_line("content_type: %d", ctype);
-        int rc = do_install(stage_path, cid, sizeof(cid), &via, ctype);
+        char install_path[384];
+        if (strncmp(stage_path, TMP_DIR, strlen(TMP_DIR)) == 0)
+            snprintf(install_path, sizeof(install_path), "%s%s",
+                     INSTALL_DIR, stage_path + strlen(TMP_DIR));
+        else
+            snprintf(install_path, sizeof(install_path), "%s", stage_path);
+        int rc = do_install(install_path, cid, sizeof(cid), &via, ctype);
         if (rc != 0) {
             char err[32];
             hex32(err, sizeof(err), (unsigned)rc);
@@ -1791,7 +1798,13 @@ static void handle_install(int fd, const http_req_t *req,
         char cbuf[16];
         if (query_get(req->query, "ctype", cbuf, sizeof(cbuf))) { int cv = atoi(cbuf); if (cv > 0) ctype = cv; }
         log_line("content_type: %d", ctype);
-        int rc = do_install(stage_path, cid, sizeof(cid), &via, ctype);
+        char install_path[384];
+        if (strncmp(stage_path, TMP_DIR, strlen(TMP_DIR)) == 0)
+            snprintf(install_path, sizeof(install_path), "%s%s",
+                     INSTALL_DIR, stage_path + strlen(TMP_DIR));
+        else
+            snprintf(install_path, sizeof(install_path), "%s", stage_path);
+        int rc = do_install(install_path, cid, sizeof(cid), &via, ctype);
         if (rc != 0) {
             char err[32];
             hex32(err, sizeof(err), (unsigned)rc);
