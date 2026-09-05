@@ -74,7 +74,6 @@
 #define RECV_TIMEOUT_S    30
 #define INIT_TIMEOUT_MS   10000U
 
-#define TMP_DIR           "/data/OnionHEN/pkgs"
 #define INSTALL_DIR       "/user/data/OnionHEN/pkgs"
 
 /* Web UI single-file bundle (Vite + vite-plugin-singlefile). Embedded at
@@ -847,7 +846,7 @@ static void handle_staged_size(int fd, const char *query) {
         return;
     }
     char p[320];
-    snprintf(p, sizeof(p), "%s/%s", TMP_DIR, name);
+    snprintf(p, sizeof(p), "%s/%s", INSTALL_DIR, name);
     struct stat st;
     if (stat(p, &st) != 0 || !S_ISREG(st.st_mode)) {
         send_json(fd, 404, "Not Found",
@@ -950,11 +949,11 @@ static void handle_chunk_install(int fd, const http_req_t *req,
         snprintf(name, sizeof(name), "upload_%lld_%d.pkg",
                  (long long)time(NULL), (int)getpid());
     }
-    snprintf(base_path, sizeof(base_path), "%s/%s", TMP_DIR, name);
+    snprintf(base_path, sizeof(base_path), "%s/%s", INSTALL_DIR, name);
 
 
     if (finalize && off == total && req->content_length == 0) {
-        snprintf(stage_path, sizeof(stage_path), "%s/%s", TMP_DIR, name);
+        snprintf(stage_path, sizeof(stage_path), "%s/%s", INSTALL_DIR, name);
         install_staged(fd, stage_path, name, req->query, total);
         return;
     }
@@ -1043,8 +1042,8 @@ static void handle_chunk_install(int fd, const http_req_t *req,
 
 
         struct stat stg;
-        if (mkdir(TMP_DIR, 0777) != 0 && errno != EEXIST)
-            log_line("mkdir %s: %s", TMP_DIR, strerror(errno));
+        if (mkdir(INSTALL_DIR, 0777) != 0 && errno != EEXIST)
+            log_line("mkdir %s: %s", INSTALL_DIR, strerror(errno));
         {
             int update = (stat(base_path, &stg) == 0 && S_ISREG(stg.st_mode) &&
                           req->have_x_size &&
@@ -1143,7 +1142,9 @@ static void handle_chunk_install(int fd, const http_req_t *req,
         }
     }
 
+    fsync(ffd);
     close(ffd);
+
     free(stream_buf);
     stream_buf = NULL;
 
@@ -1238,13 +1239,7 @@ static void install_staged(int fd, const char *stage_path, const char *name,
         char cbuf[16];
         if (query_get(query, "ctype", cbuf, sizeof(cbuf))) { int cv = atoi(cbuf); if (cv > 0) ctype = cv; }
         log_line("content_type: %d", ctype);
-        char install_path[384];
-        if (strncmp(stage_path, TMP_DIR, strlen(TMP_DIR)) == 0)
-            snprintf(install_path, sizeof(install_path), "%s%s",
-                     INSTALL_DIR, stage_path + strlen(TMP_DIR));
-        else
-            snprintf(install_path, sizeof(install_path), "%s", stage_path);
-        int rc = do_install(install_path, cid, sizeof(cid), &via, ctype);
+        int rc = do_install(stage_path, cid, sizeof(cid), &via, ctype);
         if (rc != 0) {
             char err[32];
             hex32(err, sizeof(err), (unsigned)rc);
@@ -1278,63 +1273,27 @@ static void install_staged(int fd, const char *stage_path, const char *name,
         goto out_unlocked;
     }
 
-    int wait_s = 0;
-    char wbuf[16];
-    if (query_get(query, "wait", wbuf, sizeof(wbuf))) {
-        int v = atoi(wbuf);
-        if (v <= 0)
-            wait_s = 0;
-        else if (v > INSTALL_WAIT_MAX_S)
-            wait_s = INSTALL_WAIT_MAX_S;
-        else
-            wait_s = v;
-    }
-
-    if (wait_s == 0) {
-        snprintf(body, sizeof(body),
-                 "{\"ok\":true,\"installed\":false,\"via\":\"%s\","
-                 "\"content_id\":\"%s\",\"tmp_file\":\"%s\",\"staged\":"
-                 "\"kept\",\"phase\":\"accepted\",\"note\":\"watch the SSE "
-                 "stream /api/stream for phase=playable\"}",
-                 via, esc_cid, esc_path);
-        send_json(fd, 200, "OK", body);
-        pkg_notify("notify.pkg.installing", name);
-        goto out_unlocked;
-    }
-
-    appinst_status_t fin;
-    memset(&fin, 0, sizeof(fin));
-    int done = wait_terminal_locked(cid, wait_s, &fin);
-
-    if (done && strncmp(fin.status, "playable", 8) == 0 &&
-        fin.error_info.error_code == 0) {
-        snprintf(body, sizeof(body),
-                 "{\"ok\":true,\"installed\":true,\"via\":\"%s\","
-                 "\"content_id\":\"%s\",\"phase\":\"%.15s\","
-                 "\"downloaded_size\":%llu,\"total_size\":%llu,"
-                 "\"error\":null,\"tmp_file\":\"%s\",\"staged\":\"kept\"}",
-                 via, esc_cid, fin.status,
-                 (unsigned long long)fin.downloaded_size,
-                 (unsigned long long)fin.total_size, esc_path);
-    } else if (done) {
-        char err[32];
-        hex32(err, sizeof(err), (unsigned)fin.error_info.error_code);
-        snprintf(body, sizeof(body),
-                 "{\"ok\":false,\"installed\":false,\"via\":\"%s\","
-                 "\"content_id\":\"%s\",\"phase\":\"%.15s\","
-                 "\"error\":\"%s\",\"tmp_file\":\"%s\",\"staged\":"
-                 "\"kept\"}",
-                 via, esc_cid, fin.status, err, esc_path);
-    } else {
-        snprintf(body, sizeof(body),
-                 "{\"ok\":true,\"installed\":false,\"via\":\"%s\","
-                 "\"content_id\":\"%s\",\"phase\":\"%.15s\","
-                 "\"tmp_file\":\"%s\",\"staged\":\"kept\",\"note\":"
-                 "\"watch /api/stream\"}",
-                 via, esc_cid,
-                 fin.status[0] ? fin.status : "wait", esc_path);
-    }
+    /* Send the accepted response IMMEDIATELY so the client can show the
+     * toast without waiting for the install to finish. Then flush the
+     * write side so the client receives the response right now. */
+    snprintf(body, sizeof(body),
+             "{\"ok\":true,\"installed\":false,\"via\":\"%s\","
+             "\"content_id\":\"%s\",\"tmp_file\":\"%s\",\"staged\":"
+             "\"kept\",\"phase\":\"accepted\",\"note\":\"watch the SSE "
+             "stream /api/stream for phase=playable\"}",
+             via, esc_cid, esc_path);
     send_json(fd, 200, "OK", body);
+    pkg_notify("notify.pkg.installing", name);
+
+    /* Flush write side: client receives the response now. This thread
+     * stays alive below — if it dies, Sony cancels the install. */
+    shutdown(fd, SHUT_WR);
+
+    {
+        appinst_status_t fin;
+        memset(&fin, 0, sizeof(fin));
+        wait_terminal_locked(cid, INSTALL_WAIT_MAX_S, &fin);
+    }
 
 out_unlocked:
     if (op_locked)
@@ -1673,7 +1632,7 @@ static void handle_install(int fd, const http_req_t *req,
         snprintf(name, sizeof(name), "upload_%lld_%d.pkg",
                  (long long)time(NULL), (int)getpid());
     }
-    snprintf(base_path, sizeof(base_path), "%s/%s", TMP_DIR, name);
+    snprintf(base_path, sizeof(base_path), "%s/%s", INSTALL_DIR, name);
 
 
     struct stat stg;
@@ -1713,8 +1672,8 @@ static void handle_install(int fd, const http_req_t *req,
             send_all(fd, cont, sizeof(cont) - 1);
         }
 
-        if (mkdir(TMP_DIR, 0777) != 0 && errno != EEXIST)
-            log_line("mkdir %s: %s", TMP_DIR, strerror(errno));
+        if (mkdir(INSTALL_DIR, 0777) != 0 && errno != EEXIST)
+            log_line("mkdir %s: %s", INSTALL_DIR, strerror(errno));
         int ffd = claim_stage_file(base_path, stage_path,
                                    sizeof(stage_path));
         if (ffd < 0) {
@@ -1758,7 +1717,9 @@ static void handle_install(int fd, const http_req_t *req,
             }
         }
 
+        fsync(ffd);
         close(ffd);
+        
         log_line("staged %llu bytes -> %s",
                  (unsigned long long)req->content_length, stage_path);
         pkg_notify("notify.pkgnet.received", name);
@@ -1802,13 +1763,7 @@ static void handle_install(int fd, const http_req_t *req,
         char cbuf[16];
         if (query_get(req->query, "ctype", cbuf, sizeof(cbuf))) { int cv = atoi(cbuf); if (cv > 0) ctype = cv; }
         log_line("content_type: %d", ctype);
-        char install_path[384];
-        if (strncmp(stage_path, TMP_DIR, strlen(TMP_DIR)) == 0)
-            snprintf(install_path, sizeof(install_path), "%s%s",
-                     INSTALL_DIR, stage_path + strlen(TMP_DIR));
-        else
-            snprintf(install_path, sizeof(install_path), "%s", stage_path);
-        int rc = do_install(install_path, cid, sizeof(cid), &via, ctype);
+        int rc = do_install(stage_path, cid, sizeof(cid), &via, ctype);
         if (rc != 0) {
             char err[32];
             hex32(err, sizeof(err), (unsigned)rc);
@@ -2209,8 +2164,8 @@ static void takeover_previous_instance(void) {
 int pkg_server_main(void) {
     signal(SIGPIPE, SIG_IGN);
 
-    if (mkdir(TMP_DIR, 0777) != 0 && errno != EEXIST)
-        log_line("mkdir %s: %s", TMP_DIR, strerror(errno));
+    if (mkdir(INSTALL_DIR, 0777) != 0 && errno != EEXIST)
+        log_line("mkdir %s: %s", INSTALL_DIR, strerror(errno));
 
     g_fw_major = ps5_detect_firmware_major();
     log_line("pkg-server %s starting (fw major %d)", VERSION, g_fw_major);

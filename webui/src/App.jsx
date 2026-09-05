@@ -87,12 +87,12 @@ function readU16le(bytes, o) {
 
 function readU32be(bytes, o) {
   return ((bytes[o] << 24) | (bytes[o + 1] << 16) |
-          (bytes[o + 2] << 8) | bytes[o + 3]) >>> 0
+    (bytes[o + 2] << 8) | bytes[o + 3]) >>> 0
 }
 
 function readU32le(bytes, o) {
   return (bytes[o] | (bytes[o + 1] << 8) |
-          (bytes[o + 2] << 16) | (bytes[o + 3] << 24)) >>> 0
+    (bytes[o + 2] << 16) | (bytes[o + 3] << 24)) >>> 0
 }
 
 function readU64le(bytes, o) {
@@ -137,8 +137,8 @@ function findContentId(buffer) {
 // usual little-endian u32. Returns the CATEGORY value (e.g. "GD") or null.
 function parseSfoCategory(bytes) {
   if (bytes.length < 0x14 ||
-      bytes[0] !== 0 || bytes[1] !== 0x50 ||
-      bytes[2] !== 0x53 || bytes[3] !== 0x46) {
+    bytes[0] !== 0 || bytes[1] !== 0x50 ||
+    bytes[2] !== 0x53 || bytes[3] !== 0x46) {
     return null
   }
   const keyTableStart = readU32le(bytes, 0x08)
@@ -436,7 +436,7 @@ function App() {
           setApiPort(config.api_port)
         }
       })
-      .catch(() => {})
+      .catch(() => { })
     return () => {
       active = false
     }
@@ -452,9 +452,6 @@ function App() {
     const entries = incomingFiles ? Array.from(incomingFiles) : []
     const validFiles = entries.filter((file) => {
       if (!file) return false
-      // Trim so names with stray whitespace still match; treat a missing or
-      // non-finite size (cloud placeholders, odd drag sources) as 0 instead
-      // of rejecting a real package.
       const name = String(file.name || '').trim().toLowerCase()
       const size = Number.isFinite(file.size) ? file.size : 0
       return name.endsWith('.pkg') && size <= MAX_FILE_SIZE
@@ -467,15 +464,19 @@ function App() {
         status: 'ready',
       })),
     )
-    const existingIds = new Set(filesRef.current.map((entry) => entry.id))
-    const fresh = nextFiles.filter((entry) => !existingIds.has(entry.id))
-    if (fresh.length) {
-      filesRef.current = [...filesRef.current, ...fresh]
-      setFiles(filesRef.current)
-    }
+
+    setFiles(currentFiles => {
+      const existingIds = new Set(currentFiles.map(entry => entry.id))
+      const fresh = nextFiles.filter(entry => !existingIds.has(entry.id))
+      if (fresh.length) {
+        const updated = [...currentFiles, ...fresh]
+        filesRef.current = updated
+        return updated
+      }
+      return currentFiles
+    })
+
     if (inputRef.current) inputRef.current.value = ''
-    // Only warn when nothing usable arrived; a valid pkg mixed with extra
-    // junk entries must not look like a rejection.
     if (validFiles.length === 0 && entries.length > 0) {
       showToast('warning', 'invalidPkg')
     } else if (fresh.length > 0) {
@@ -569,7 +570,7 @@ function App() {
       const frameName = status.name || ''
       const frameTotal = Number(status.total) || 0
       if (frameName && frameTotal && frameName !== file.name &&
-          frameTotal !== file.size) return
+        frameTotal !== file.size) return
       updateProgress(Math.max(status.bytes, receivedRef.current))
     }
 
@@ -594,7 +595,7 @@ function App() {
         let nextJob = 0
         const failed = []
         const worker = async () => {
-          for (;;) {
+          for (; ;) {
             if (signal.aborted) return
             const idx = nextJob
             nextJob += 1
@@ -658,7 +659,7 @@ function App() {
       return false
     }
     while (!TERMINAL_OK.includes(status.phase) && status.phase !== 'error' &&
-           status.phase !== 'idle' && pollCount < POLL_CAP) {
+      status.phase !== 'idle' && pollCount < POLL_CAP) {
       if (status.phase === 'accepted') {
         acceptedPolls += 1
         if (acceptedPolls > 10) break // accepted but completion not trackable
@@ -799,21 +800,21 @@ function App() {
                     </div>
                     <div className={`file-state state-${entry.status}`} aria-label={entry.status}>{entry.status === 'complete' ? <Check size={15} /> : entry.status === 'installing' ? <RefreshCw className="spin" size={14} /> : <span />}</div>
                     {!(isInstalling && !uploading && entry.id === activeId) && (
-                    <button
-                      className="remove-file"
-                      title={uploading && entry.id === activeId ? t('cancelUploadTitle') : t('removePackageTitle')}
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        if (uploading && entry.id === activeId) {
-                          setCancelModal(true)
-                          return
-                        }
-                        const next = filesRef.current.filter((item) => item.id !== entry.id)
-                        filesRef.current = next
-                        setFiles(next)
-                      }}
-                    ><X size={14} /></button>
-                  )}
+                      <button
+                        className="remove-file"
+                        title={uploading && entry.id === activeId ? t('cancelUploadTitle') : t('removePackageTitle')}
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          if (uploading && entry.id === activeId) {
+                            setCancelModal(true)
+                            return
+                          }
+                          const next = filesRef.current.filter((item) => item.id !== entry.id)
+                          filesRef.current = next
+                          setFiles(next)
+                        }}
+                      ><X size={14} /></button>
+                    )}
                   </div>
                 ))}
               </div>
