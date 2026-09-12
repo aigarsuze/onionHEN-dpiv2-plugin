@@ -1,0 +1,47 @@
+name: Build PS5 Plugin
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y build-essential cmake ninja-build python3 nodejs npm
+
+    - name: Setup PS5 Payload SDK
+      run: |
+        git clone https://github.com /opt/ps5-sdk
+        echo "PS5_PAYLOAD_SDK=/opt/ps5-sdk" >> $GITHUB_ENV
+
+    - name: Build WebUI
+      run: |
+        if [ -d "webui" ]; then
+          cd webui
+          npm ci
+          npm run build
+          cd ..
+        fi
+
+    - name: Configure CMake
+      run: cmake --preset ps5
+
+    - name: Build Project
+      run: cmake --build --preset ps5
+
+    - name: Upload Artifact
+      uses: actions/artifacts/upload@v4
+      with:
+        name: dpiv2-elf-plugin
+        path: build-ps5/bin/*.elf
